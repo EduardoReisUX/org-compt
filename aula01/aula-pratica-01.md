@@ -1,20 +1,40 @@
-﻿# Organização de computadores
+﻿Organização de Computadores, Roteiro da Aula Prática 1, 18 de julho de 2023.
 
-Iremos criar a seguinte arquitetura: 
+---
 
-[TODO: img do exemplo]()
+**Índice do conteúdo**
 
-O objetivo é descrever o NEANDER em VHDL e vê-lo funcionando.
+- [Objetivo](#objetivo)
+- [Criar projeto](#criar-projeto)
+- [Programando em VHDL - gates2](#programando-em-vhdl---gates2)
+	- [Criando novo arquivo](#criando-novo-arquivo)
+	- [Definindo Entidade](#definindo-entidade)
+	- [Definindo Arquitetura](#definindo-arquitetura)
+- [Programando em VHDL - gates2\_top](#programando-em-vhdl---gates2_top)
+	- [Criando novo arquivo](#criando-novo-arquivo-1)
+	- [Definindo Entidade](#definindo-entidade-1)
+	- [Definindo Arquitetura](#definindo-arquitetura-1)
+- [Arquivos finais](#arquivos-finais)
+	- [Arquivo `gates2.vhd`:](#arquivo-gates2vhd)
+	- [Arquivo `gates2_top`:](#arquivo-gates2_top)
+- [Atribuindo aos leds e sinais de controle aos pinos do Cyclone](#atribuindo-aos-leds-e-sinais-de-controle-aos-pinos-do-cyclone)
 
-### Criar projeto
+## Objetivo
 
-1. Cyclone IV E
-2. EP4C6**E22C8**
-3. Nome do projeto: "gates_top"
+Iremos criar a seguinte arquitetura descrevendo-o em VHDL: 
 
-### Programando em VHDL - gates2
+![Ilustração da arquitetura](imgs/gates2.jpg)
 
-#### Criando novo arquivo
+## Criar projeto
+
+1. Abra a IDE Quartus II
+2. Clique em criar novo projeto
+3. Selecione o FPGA Cyclone IV E, modelo EP4C6E22C8
+4. Nome do projeto: "gates_top"
+
+## Programando em VHDL - gates2
+
+### Criando novo arquivo
 
 `File -> New... -> VHDL File`
 
@@ -27,7 +47,7 @@ use IEEE.std_logic_1164.all;
 
 Salve como `gates2.vhd`
 
-#### Definindo Entidade
+### Definindo Entidade
 
 A entidade define as portas de entrada e saída do circuito.  Adicione essas linhas ao arquivo:
 
@@ -48,7 +68,7 @@ end gates2;
 
 Salve o arquivo.
 
-#### Definindo Arquitetura
+### Definindo Arquitetura
 
 A arquitetura dita o comportamento das portas de entrada e saída do circuito. Adicione essas linhas ao arquivo:
 
@@ -64,9 +84,9 @@ begin
 end gates2;
 ```
 
-### Programando em VHDL - gates2_top
+## Programando em VHDL - gates2_top
 
-#### Criando novo arquivo
+### Criando novo arquivo
 
 `File -> New... -> VHDL File`
 
@@ -79,23 +99,23 @@ use IEEE.std_logic_1164.all;
 
 Salve como `gates2_top.vhd`. 
 
-#### Definindo Entidade
+### Definindo Entidade
 
 Adicione essas linhas ao arquivo:
 
 ```VHDL
-entity gates2_op is 
+entity gates2_top is 
 port (
 	sw: in STD_LOGIC_VECTOR (1 downto 0);
 	ld: out STD_LOGIC_VECTOR (5 downto 0)
 );
-end gates2_op;
+end gates2_top;
 ```
 
-#### Definindo Arquitetura
+### Definindo Arquitetura
 
 ```VHDL
-architecture gates2_op of gates2_op is 
+architecture gates2_top of gates2_top is 
 component gates2
 port (
 	a: in STD_LOGIC;
@@ -119,14 +139,14 @@ U1: gates2 port map (
 	xnor_gate => ld(1),
 	xor_gate => ld(0)
 );
-end gates2_op;
+end gates2_top;
 ```
 
 Compilar o código no ícone do play.
 
-#### Arquivos finais
+## Arquivos finais
 
-gates2:
+### Arquivo `gates2.vhd`:
 
 ```VHDL
 library IEEE;
@@ -154,22 +174,22 @@ begin
 	xor_gate <= b xor a;
 	xnor_gate <= not (b xor a);
 end gates2;
-````
+```
 
-gates2_top (renomear tudo para gates2_top):
+### Arquivo `gates2_top`:
 
 ```VHDL
 library IEEE;
 use IEEE.std_logic_1164.all;
 
-entity gates2_op is 
+entity gates2_top is 
 port (
 	sw: in STD_LOGIC_VECTOR (1 downto 0);
 	ld: out STD_LOGIC_VECTOR (5 downto 0)
 );
-end gates2_op;
+end gates2_top;
 
-architecture gates2_op of gates2_op is 
+architecture gates2_top of gates2_top is 
 component gates2
 port (
 	a: in STD_LOGIC;
@@ -193,20 +213,20 @@ U1: gates2 port map (
 	xnor_gate => ld(1),
 	xor_gate => ld(0)
 );
-end gates2_op;
+end gates2_top;
 ```
 
-### Atribuindo aos leds e sinais de controle aos pinos do Cyclone
+## Atribuindo aos leds e sinais de controle aos pinos do Cyclone
 
-Abrindo janela de assignments
+Abrindo janela de pin planner em:
 
 `Assignments -> Pin Planner`
 
-Vai abrir essa janela:
+Irá exibir esta janela:
 
 ![janela pin planner](imgs/pin-planner.png)
 
-Atribuir os leds e os sw aos seguintes pinos:
+Atribuir os leds e os sw aos seguintes pinos, conforme na figura acima:
 - ld[3]: PIN_84
 - ld[2]: PIN_85
 - ld[1]: PIN_86
@@ -215,8 +235,3 @@ Atribuir os leds e os sw aos seguintes pinos:
 - sw[1]: PIN_88
 
 Compilar novamente.
-
-
-### Programando o ngc com o SB Blaster
-
-asd
