@@ -2,7 +2,7 @@
 
 ---
 
-**Índice do conteúdo**
+**Sumário**
 
 - [Objetivo](#objetivo)
 - [Criar projeto](#criar-projeto)
