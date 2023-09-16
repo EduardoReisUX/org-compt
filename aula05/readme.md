@@ -4,11 +4,22 @@ Organização de Computadores, Roteiro da Aula Prática 5, 29 de agosto de 2023.
 
 **Sumário**
 
+- [Objetivo da aula](#objetivo-da-aula)
+- [Roteiro](#roteiro)
+	- [Criar projeto](#criar-projeto)
+	- [Arquivo x7seg](#arquivo-x7seg)
+	- [Arquivo x7seg\_top](#arquivo-x7seg_top)
+	- [Pin planner](#pin-planner)
+
 ## Objetivo da aula
 
 Criar um contador em anel com divisor de clock e integrar junto com display de 7 segmentos.
 
 Display de 7 segmentos com divisor de clock.
+
+Implementar um módulo VHDL para exibir números hexadecimais em um display de sete segmentos de quatro dígitos.
+
+[<img src="imgs/x7seg.jpeg" width="50%" alt="Circuito"/>](imgs/x7seg.jpeg)
 
 ## Roteiro
 
@@ -18,11 +29,37 @@ Display de 7 segmentos com divisor de clock.
 - Selecione uma pasta .../ex05
 - O nome do projeto é: `x7seg_top`
 - Clique em Next
-- Selecione qualquer FPGA Cyclone V, modelo EP4CE6E22C8
+- Selecione o FPGA Cyclone VI E, modelo EP4CE6E22C8
 - Clique em Next
 - Finish
 
 ### Arquivo x7seg
+
+O arquivo x7seg implementa um controlador para exibir números hexadecimais em um display de sete segmentos de quatro dígitos. Ele divide o sinal de clock principal, controla a seleção dos dígitos, traduz os dígitos em códigos de segmentos e controla os ânodos dos dígitos. O resultado é a exibição de números hexadecimais no display de sete segmentos.
+
+A entidade x7seg é declarada com várias portas de entrada e saída.
+
+- **x** é uma entrada de 16 bits que representa os números a serem exibidos no display.
+- **clk** é uma entrada que representa o sinal de clock.
+- **clr** é uma entrada que representa o sinal de reset.
+- **a_to_g** é uma saída de 7 bits que representa os segmentos do display de sete segmentos.
+- **an** é uma saída de 4 bits que representa os ânodos do display (cada um controla um dígito).
+- **dp** é uma saída de 1 bit que controla o ponto decimal.
+
+Vários sinais internos são declarados para auxiliar na lógica do funcionamento do display.
+
+- **clkdiv** é um sinal de 20 bits usado para dividir o sinal de clock principal em duas partes para sincronização.
+- **s** é um sinal de 2 bits que representa o estado do contador.
+- **aen** é um sinal de 4 bits que controla os ânodos dos dígitos.
+- **digit** é um sinal de 4 bits que armazena os dígitos a serem exibidos.
+
+Um processo é usado para selecionar os dígitos a serem exibidos no display de sete segmentos com base no valor de **s**. Isso é feito através de uma instrução **case**.
+
+Outro processo é usado para traduzir os valores dos dígitos armazenados em **digit** nos códigos de segmentos correspondentes para o display de sete segmentos. Isso é feito através de outra instrução **case**.
+
+Um processo é usado para selecionar os ânodos dos dígitos acesos com base no valor de **s** e **aen**. Ele garante que apenas um dígito seja aceso por vez.
+
+Um processo é usado para dividir o sinal de clock principal em **clkdiv**. Isso é usado para sincronizar várias operações dentro do módulo.
 
 ```VHDL
 library IEEE;
@@ -106,6 +143,34 @@ end x7seg;
 
 ### Arquivo x7seg_top
 
+O arquivo **x7seg_top** descreve uma topologia (top module) que conecta um módulo **x7seg** para controlar a exibição do display de sete segmentos.
+
+A entidade **x7seg_top** é declarada com várias portas de entrada e saída.
+
+- **mclk** é uma entrada que representa o sinal de clock principal.
+- **btn** é uma entrada que representa um botão.
+- **a_to_g** é uma saída de 7 bits que representa os segmentos do display de sete segmentos.
+- **an** é uma saída de 4 bits que representa os ânodos do display (cada um controla um dígito).
+- **dp** é uma saída de 1 bit que controla o ponto decimal.
+
+Dentro da arquitetura, é declarado um componente chamado **x7seg**, que representa o módulo que controla o display de sete segmentos. As portas do componente correspondem às portas da entidade **x7seg** que foi mencionada anteriormente.
+
+Dois sinais internos são declarados:
+
+- **x** é um sinal de 16 bits que armazena o valor X"AA55". Este valor será usado como entrada para o componente **x7seg**.
+- **nbtn** é um sinal que armazena a negação do valor do botão **btn**. Isso será usado como sinal de reset para o componente **x7seg**.
+
+Os sinais **x** e **nbtn** recebem valores específicos. **x** é inicializado com o valor X"AA55", e **nbtn** é definido como a negação do valor do botão **btn**.
+
+O componente x7seg é instanciado com o nome X1. As portas do componente são mapeadas para os sinais e as portas da entidade **x7seg_top**.
+
+- **x** é mapeado para **x**.
+- **clk** é mapeado para **mclk**.
+- **clr** é mapeado para **nbtn**.
+- **a_to_g** é mapeado para **a_to_g**.
+- **an** é mapeado para **an**.
+- **dp** é mapeado para **dp**.
+
 ```VHDL
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -152,7 +217,7 @@ end x7seg_top;
 
 ### Pin planner
 
-![pin planner](imgs/pin-planner.png)
+[<img src="imgs/pin-planner.png" alt="Pin Planner" width="75%">](imgs/pin-planner.png)
 
 - an(3): 137
 - an(2): 136
