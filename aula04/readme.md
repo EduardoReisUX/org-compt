@@ -1,250 +1,236 @@
-Organização de Computadores, Roteiro da Aula Prática 4, 22 de agosto de 2023.
+Organização de Computadores, Roteiro da Aula Prática 5, 29 de agosto de 2023.
 
 ---
 
 **Sumário**
 
 - [Objetivo da aula](#objetivo-da-aula)
-- [Roteiro 1](#roteiro-1)
+- [Roteiro](#roteiro)
 	- [Criar projeto](#criar-projeto)
-	- [Arquivo adder8](#arquivo-adder8)
-	- [Arquivo mux88](#arquivo-mux88)
-	- [Arquivo reg](#arquivo-reg)
-	- [Arquivo reg\_count](#arquivo-reg_count)
-
+	- [Arquivo x7seg](#arquivo-x7seg)
+	- [Arquivo x7seg\_top](#arquivo-x7seg_top)
+	- [Pin planner](#pin-planner)
 
 ## Objetivo da aula
 
-Implementar um circuito que funciona como um contador síncrono de 8 bits, utilizando somador (adder8), um registrador (reg), e um multiplexador (mux88) interconectados de acordo com a lógica especificada na imagem abaixo.
+Criar um contador em anel com divisor de clock e integrar junto com display de 7 segmentos.
 
-[<img src="imgs/circuito.jpg" width="50%" alt="Circuito"/>](imgs/circuito.jpg)
+Display de 7 segmentos com divisor de clock.
 
-## Roteiro 1
+Implementar um módulo VHDL para exibir números hexadecimais em um display de sete segmentos de quatro dígitos.
+
+[<img src="imgs/x7seg.jpeg" width="50%" alt="Circuito"/>](imgs/x7seg.jpeg)
+
+## Roteiro
 
 ### Criar projeto
 
 - New project wizard
-- Selecione uma pasta .../ex04
-- O nome do projeto é: `reg_count`
+- Selecione uma pasta .../ex05
+- O nome do projeto é: `x7seg_top`
 - Clique em Next
-- Selecione qualquer FPGA, pois não faremos o uso de alguma placa em específica.
+- Selecione o FPGA Cyclone VI E, modelo EP4CE6E22C8
 - Clique em Next
 - Finish
 
-### Arquivo adder8
+### Arquivo x7seg
 
-Este código VHDL define uma entidade chamada adder8 que implementa um somador de 8 bits. Sempre que os valores nas entradas a ou b mudam, o somador é acionado, e o resultado é colocado na saída s.
+O arquivo x7seg implementa um controlador para exibir números hexadecimais em um display de sete segmentos de quatro dígitos. Ele divide o sinal de clock principal, controla a seleção dos dígitos, traduz os dígitos em códigos de segmentos e controla os ânodos dos dígitos. O resultado é a exibição de números hexadecimais no display de sete segmentos.
 
-A entidade adder8 é declarada com duas entradas (a e b) e uma saída (s). As entradas a e b são vetores de 8 bits, enquanto a saída s também é um vetor de 8 bits. Isso significa que este somador é projetado para somar dois números de 8 bits e produzir uma saída de 8 bits.
+A entidade x7seg é declarada com várias portas de entrada e saída.
 
-Dentro da arquitetura, há um bloco de processo (process) que é sensível às mudanças nos sinais de entrada a e b. Isso significa que sempre que os valores de a ou b mudarem, o bloco de processo será executado.
+- **x** é uma entrada de 16 bits que representa os números a serem exibidos no display.
+- **clk** é uma entrada que representa o sinal de clock.
+- **clr** é uma entrada que representa o sinal de reset.
+- **a_to_g** é uma saída de 7 bits que representa os segmentos do display de sete segmentos.
+- **an** é uma saída de 4 bits que representa os ânodos do display (cada um controla um dígito).
+- **dp** é uma saída de 1 bit que controla o ponto decimal.
+
+Vários sinais internos são declarados para auxiliar na lógica do funcionamento do display.
+
+- **clkdiv** é um sinal de 20 bits usado para dividir o sinal de clock principal em duas partes para sincronização.
+- **s** é um sinal de 2 bits que representa o estado do contador.
+- **aen** é um sinal de 4 bits que controla os ânodos dos dígitos.
+- **digit** é um sinal de 4 bits que armazena os dígitos a serem exibidos.
+
+Um processo é usado para selecionar os dígitos a serem exibidos no display de sete segmentos com base no valor de **s**. Isso é feito através de uma instrução **case**.
+
+Outro processo é usado para traduzir os valores dos dígitos armazenados em **digit** nos códigos de segmentos correspondentes para o display de sete segmentos. Isso é feito através de outra instrução **case**.
+
+Um processo é usado para selecionar os ânodos dos dígitos acesos com base no valor de **s** e **aen**. Ele garante que apenas um dígito seja aceso por vez.
+
+Um processo é usado para dividir o sinal de clock principal em **clkdiv**. Isso é usado para sincronizar várias operações dentro do módulo.
 
 ```VHDL
 library IEEE;
 use IEEE.std_logic_1164.all;
-use IEEE.std_logic_arith.all;
 use IEEE.std_logic_unsigned.all;
 
-entity adder8 is 
+entity x7seg is
 	port (
-		a,b: in std_logic_vector(7 downto 0);
-		s: out std_logic_vector(7 downto 0)
-	);
-end adder8;
-
-architecture behavioral of adder8 is
-begin
-	process (a,b)
-	variable temp: std_logic_vector (7 downto 0);
-	
-	begin
-		temp := a + b;
-		s <= temp;
-	end process;
-end behavioral;
-```
-
-### Arquivo mux88
-
-Este código VHDL descreve um multiplexador 8x8 que seleciona entre duas entradas de 8 bits (a e b) com base no valor do sinal de controle s. Dependendo do valor de s, a saída y será igual a a, b ou zero.
-
-A entidade mux88 é declarada com três portas: s, a, b e y.
-
-- s é uma entrada de um único bit e atua como o sinal de controle que determina qual dos dois vetores de 8 bits (a ou b) será selecionado.
-- a e b são entradas, cada uma sendo um vetor de 8 bits.
-- y é a saída, também um vetor de 8 bits. Esta é a saída que receberá o valor selecionado com base em s.
-
-Dentro da arquitetura, há um bloco de processo (process) que é sensível às mudanças nos sinais de entrada s, a e b. Isso significa que sempre que qualquer um desses sinais mudar, o bloco de processo será executado.
-
-Dentro do bloco de processo, há uma estrutura case que avalia o valor de s.
-
-- Ramo when '0': Se s for igual a '0', o vetor a é atribuído à saída y. Isso significa que a entrada a é selecionada quando s é igual a '0'.
-- Ramo when '1': Se s for igual a '1', o vetor b é atribuído à saída y. Isso significa que a entrada b é selecionada quando s é igual a '1'.
-- Ramo when others: Se s não for igual a '0' nem '1', o valor X"00" (que representa um vetor de 8 bits com todos os bits em zero) é atribuído à saída y. Isso atua como uma cláusula "default" e garante que, caso s tenha um valor diferente de '0' ou '1', a saída y seja definida como zero.
-
-```VHDL
-library IEEE;
-use IEEE.std_logic_1164.all;
-
-entity mux88 is 
-	port (
-		s: in std_logic;
-		a, b: in std_logic_vector (7 downto 0);
-		y: out std_logic_vector(7 downto 0)
-	);
-end mux88;
-
-architecture mux88 of mux88 is
-begin
-	process (s, a, b)
-	begin
-		case s is 
-			when '0' => y <= a; -- caso s seja igual a 0, y recebe a.
-			when '1' => y <= b;
-			when others => y <= X"00"; -- y sera 0.
-			end case;
-	end process;
-end mux88;
-```
-
-### Arquivo reg
-
-Este código VHDL descreve um registrador de 8 bits que pode ser sincronizado por um sinal de clock (clk). Quando o sinal de reset assíncrono (clr) é igual a '1', o registrador é resetado para zero. Caso contrário, na borda de subida do sinal de clock (clk), os dados presentes na entrada d são carregados para a saída q, armazenando assim os dados no registrador.
-
-A entidade reg é declarada com quatro portas:
-
-- **clk** é uma entrada que representa o sinal de clock que sincroniza a operação do registrador.
-- **clr** é uma entrada que representa o sinal de reset assíncrono. Quando clr é igual a '1', o registrador é resetado.
-- **d** é uma entrada que é um vetor de 8 bits e representa os dados que serão armazenados no registrador.
-- **q** é uma saída que é um vetor de 8 bits e representa os dados armazenados no registrador.
-
-Dentro da arquitetura, há um bloco de processo (process) que é sensível às mudanças nos sinais de entrada clr e clk. Isso significa que o registrador irá reagir a mudanças nesses sinais.
-
-Dentro do bloco de processo, há duas condicionais if aninhadas:
-
-- A primeira condicional verifica o sinal clr. Se clr for igual a '1', o registrador é resetado, o que significa que a saída q é configurada para zero (usando a linha comentada q <= X"00"; ou q <= (others => '0');).
-- A segunda condicional verifica se ocorreu uma borda de subida (clk'event) no sinal de clock (clk) quando clk é igual a '1'. Se ambas as condições forem verdadeiras, ou seja, o registrador não está em estado de reset (clr não é igual a '1') e ocorreu uma borda de subida no sinal de clock, os dados na entrada d são transferidos para a saída q. Isso representa a operação de carregamento dos dados no registrador em resposta ao sinal de clock.
-
-```VHDL
-library IEEE;
-use IEEE.std_logic_1164.all;
-
-entity reg is 
-	port (
+		x: in std_logic_vector(15 downto 0);
 		clk: in std_logic;
 		clr: in std_logic;
-		d: in std_logic_vector (7 downto 0);
-		q: out std_logic_vector (7 downto 0)
+		a_to_g: out std_logic_vector(6 downto 0); -- a até g
+		an: out std_logic_vector(3 downto 0); -- anodos
+		dp: out std_logic 								-- ponto decimal
 	);
-end reg;
+end x7seg;
 
-architecture reg of reg is 
+architecture x7seg of x7seg is
+signal clkdiv: std_logic_vector(19 downto 0);
+signal s: std_logic_vector(1 downto 0);
+signal aen: std_logic_vector(3 downto 0);	
+signal digit: std_logic_vector(3 downto 0); -- vai guardar os digitos
+
 begin
-	process (clr, clk)
+	s <= clkdiv(19 downto 18);
+	aen <= "1111"; -- tudo ligado
+	dp <= '1';
+	
+	process (x, s)
 	begin
+		case s is
+			when "00" => digit <= x(3 downto 0); -- quando digit for igual a 00, então x recebe 3 downto 0
+			when "01" => digit <= x(7 downto 4);
+			when "10" => digit <= x(11 downto 8);
+			when others => digit <= x(15 downto 12);
+		end case;
+	end process;
+	
+	process (digit)
+	begin
+		case digit is
+			when X"0" => a_to_g <= "0000001"; -- 0
+			when X"1" => a_to_g <= "1001111"; -- 1
+			when X"2" => a_to_g <= "0010010"; -- 2
+			when X"3" => a_to_g <= "0000110"; -- 3
+			when X"4" => a_to_g <= "1001100"; -- 4
+			when X"5" => a_to_g <= "0100100"; -- 5
+			when X"6" => a_to_g <= "0100000"; -- 6
+			when X"7" => a_to_g <= "0001101"; -- 7
+			when X"8" => a_to_g <= "0000000"; -- 8
+			when X"9" => a_to_g <= "0000100"; -- 9
+			when X"A" => a_to_g <= "0001000"; -- A
+			when X"B" => a_to_g <= "1100000"; -- B
+			when X"C" => a_to_g <= "0110001"; -- C
+			when X"D" => a_to_g <= "1000010"; -- D
+			when X"E" => a_to_g <= "0110000"; -- E
+			when others => a_to_g <= "0111000"; -- F
+		end case;
+	end process;
+
+	process (s, aen)
+	begin 
+		an <= "1111";
+		if aen(conv_integer(s)) = '1' then
+			an(conv_integer(s)) <= '0';
+		end if;
+	end process;
+	
+	process (clk, clr)
+	begin 
 		if (clr = '1') then
-			-- q <= X"00";
-			q <= (others => '0');
+			clkdiv <= (others => '0');
 		else
-			if (clk'event and clk = '1') then
-				q <= d;
+			if clk'event and clk = '1' then
+				clkdiv <= clkdiv + 1;
 			end if;
 		end if;
 	end process;
-end reg;
+end x7seg;
 ```
 
-### Arquivo reg_count
+### Arquivo x7seg_top
 
-Este código VHDL descreve um circuito que consiste em um contador síncrono de 8 bits com uma entrada de dados (d), uma saída de dados (q), um sinal de controle (s), um sinal de reset assíncrono (clr) e um sinal de clock (clk).
+O arquivo **x7seg_top** descreve uma topologia (top module) que conecta um módulo **x7seg** para controlar a exibição do display de sete segmentos.
 
-Dentro da arquitetura, três sinais (**adder_out**, **reg_out**, e **mux_out**) são declarados. Esses sinais são usados para interconectar os componentes do circuito.
+A entidade **x7seg_top** é declarada com várias portas de entrada e saída.
 
-Três componentes são declarados, cada um representando um bloco funcional diferente criados anteriormente:
+- **mclk** é uma entrada que representa o sinal de clock principal.
+- **btn** é uma entrada que representa um botão.
+- **a_to_g** é uma saída de 7 bits que representa os segmentos do display de sete segmentos.
+- **an** é uma saída de 4 bits que representa os ânodos do display (cada um controla um dígito).
+- **dp** é uma saída de 1 bit que controla o ponto decimal.
 
-- adder8: Representa um somador de 8 bits. Esse componente adiciona **reg_out** e a constante hexadecimal X"01" e coloca o resultado em **adder_out**.
-- mux88: Representa um multiplexador 8x8. Ele seleciona entre os sinais d e **adder_out** com base no sinal de controle s e coloca o resultado em **mux_out**.
-- reg: Representa um registrador de 8 bits. Ele armazena o valor de **mux_out** em **reg_out**.
+Dentro da arquitetura, é declarado um componente chamado **x7seg**, que representa o módulo que controla o display de sete segmentos. As portas do componente correspondem às portas da entidade **x7seg** que foi mencionada anteriormente.
 
-As portas dos componentes são atribuídas aos sinais e aos sinais das portas da entidade reg_count nas seções a seguir:
+Dois sinais internos são declarados:
 
-- ADDER: O componente adder8 é mapeado para as portas **a**, **b** e **s**, onde **a** recebe reg_out, **b** recebe a constante X"01", e **s** recebe **adder_out**.
-- MREG: O componente reg é mapeado para as portas **clk**, **clr**, **d**, e **q**, onde **clk** recebe **clk**, **clr** recebe '0', **d** recebe **mux_out**, e **q** recebe **reg_out**.
-- MUX: O componente mux88 é mapeado para as portas **s**, **a**, **b**, e **y**, onde **s** recebe **s**, **a** recebe **adder_out**, **b** recebe **d**, e **y** recebe **mux_out**.
+- **x** é um sinal de 16 bits que armazena o valor X"AA55". Este valor será usado como entrada para o componente **x7seg**.
+- **nbtn** é um sinal que armazena a negação do valor do botão **btn**. Isso será usado como sinal de reset para o componente **x7seg**.
+
+Os sinais **x** e **nbtn** recebem valores específicos. **x** é inicializado com o valor X"AA55", e **nbtn** é definido como a negação do valor do botão **btn**.
+
+O componente x7seg é instanciado com o nome X1. As portas do componente são mapeadas para os sinais e as portas da entidade **x7seg_top**.
+
+- **x** é mapeado para **x**.
+- **clk** é mapeado para **mclk**.
+- **clr** é mapeado para **nbtn**.
+- **a_to_g** é mapeado para **a_to_g**.
+- **an** é mapeado para **an**.
+- **dp** é mapeado para **dp**.
 
 ```VHDL
 library IEEE;
 use IEEE.std_logic_1164.all;
-use IEEE.std_logic_arith.all;
-use IEEE.std_logic_unsigned.all;
 
-entity reg_count is 
-	port (
-		d: in std_logic_vector(7 downto 0);
-		q: out std_logic_vector(7 downto 0);
-		s: in std_logic;
-		clr, clk: in std_logic
+entity x7seg_top is
+	port(
+		mclk: in std_logic;
+		btn: in std_logic; -- botão
+		a_to_g: out std_logic_vector(6 downto 0);
+		an: out std_logic_vector(3 downto 0);
+		dp: out std_logic
 	);
-end reg_count;
+end x7seg_top;
 
-architecture structural of reg_count is
-	signal adder_out: std_logic_vector(7 downto 0);
-	signal reg_out: std_logic_vector(7 downto 0);
-	signal mux_out: std_logic_vector(7 downto 0);
-	
-	component adder8
+architecture x7seg_top of x7seg_top is
+component x7seg
 	port (
-		a,b: in std_logic_vector(7 downto 0);
-		s: out std_logic_vector(7 downto 0)
-	);
-	end component;
-	
-	component reg
-	port (
+		x: in std_logic_vector(15 downto 0);
 		clk: in std_logic;
 		clr: in std_logic;
-		d: in std_logic_vector (7 downto 0);
-		q: out std_logic_vector (7 downto 0)
+		a_to_g: out std_logic_vector(6 downto 0); -- a até g
+		an: out std_logic_vector(3 downto 0);
+		dp: out std_logic 								-- ponto decimal
 	);
-	end component;
-	
-	component mux88
-	port (
-		s: in std_logic;
-		a, b: in std_logic_vector (7 downto 0);
-		y: out std_logic_vector(7 downto 0)
-	);	
-	end component;
-	
-	begin
-		ADDER: adder8 port map (
-			a => reg_out,
-			b => X"01", -- 01 em hexadecimal
-			s => adder_out
-		);
-		
-		MREG: reg port map (
-			clk => clk,
-			clr => '0',
-			d => mux_out,
-			q => reg_out
-		);
-		
-		MUX: mux88 port map (
-			s => s,
-			a => adder_out,
-			b => d,
-			y => mux_out
-		);
-		
-		q <= reg_out;
-end structural;
+end component;
+
+signal x: std_logic_vector(15 downto 0);
+signal nbtn: std_logic;
+
+begin
+	x <= X"AA55";
+	nbtn <= not btn;
+	X1: x7seg port map (
+		x => x,
+		clk => mclk,
+		clr => nbtn,
+		a_to_g => a_to_g,
+		an => an,
+		dp => dp
+	);
+
+end x7seg_top;
 ```
 
-Obs.: O relatório dessa aula é até apenas essa parte. Daqui pra frente é outra história.
+### Pin planner
 
-<!-- ## Roteiro 2
+[<img src="imgs/pin-planner.png" alt="Pin Planner" width="75%">](imgs/pin-planner.png)
 
-Display de 7 segmentos varia de A até G, todos os segmentos dos displays estão ligados no mesmo pino do FPGA, são segmentos de anôdo. Para os dois displays funcionarem é necessário fazer a troca de padrão entre os displays muito rápido.
+- an(3): 137
+- an(2): 136
+- an(1): 135
+- an(0): 133
+- btn: 88
+- dp: 127
+- mclk: 23
+- a_to_g(6): 128
+- a_to_g(5):121
+- a_to_g(4):125
+- a_to_g(3):129
+- a_to_g(2):132
+- a_to_g(1):126
+- a_to_g(0):124
 
-###  -->
