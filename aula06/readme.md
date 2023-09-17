@@ -4,6 +4,12 @@ Organização de Computadores, Roteiro da Aula Prática 6, 05 de setembro de 202
 
 **Sumário**
 
+- [Objetivo da aula](#objetivo-da-aula)
+- [Roteiro](#roteiro)
+	- [Criar projeto](#criar-projeto)
+	- [Arquivo reg\_count\_top](#arquivo-reg_count_top)
+	- [Pinos](#pinos)
+
 ## Objetivo da aula
 
 Será construído um circuito com base nos componentes já criados nas aulas passadas.

@@ -3,6 +3,7 @@ Organização de Computadores, Roteiro da Aula Prática 4, 22 de agosto de 2023.
 ---
 
 **Sumário**
+
 - [Objetivo da aula](#objetivo-da-aula)
 - [Roteiro 1](#roteiro-1)
 	- [Criar projeto](#criar-projeto)

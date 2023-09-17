@@ -6,12 +6,11 @@ Organização de Computadores, Roteiro da Aula Prática 7, 12 de setembro de 202
 
 - [Objetivo da aula](#objetivo-da-aula)
 - [Roteiro](#roteiro)
-  - [Criar projeto](#criar-projeto)
-  - [Arquivo importado x7seg](#arquivo-importado-x7seg)
-  - [Arquivo rom](#arquivo-rom)
-  - [Arquivo neader\_rom](#arquivo-neader_rom)
-  - [Pin Planner](#pin-planner)
-
+	- [Criar projeto](#criar-projeto)
+	- [Arquivo importado x7seg](#arquivo-importado-x7seg)
+	- [Arquivo rom](#arquivo-rom)
+	- [Arquivo neader\_rom](#arquivo-neader_rom)
+	- [Pin Planner](#pin-planner)
 
 ## Objetivo da aula
 
