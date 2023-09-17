@@ -1,4 +1,4 @@
-Organização de Computadores, Roteiro da Aula Prática 4, 22 de agosto de 2023.
+Organização de Computadores, Roteiro da Aula Prática 3, 22 de agosto de 2023.
 
 ---
 

@@ -1,4 +1,4 @@
-Organização de Computadores, Roteiro da Aula Prática 6, 05 de setembro de 2023.
+Organização de Computadores, Roteiro da Aula Prática 5, 05 de setembro de 2023.
 
 ---
 
