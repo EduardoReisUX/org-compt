@@ -223,4 +223,4 @@ constant rom: rom_array := (
 
 Simule o waveform novamente:
 
-![Simulação do waveform 2](image.png)
+![Simulação Waveform depois das alterações](image.png)
