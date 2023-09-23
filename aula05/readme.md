@@ -14,7 +14,7 @@ Organização de Computadores, Roteiro da Aula Prática 5, 05 de setembro de 202
 
 Será construído um circuito com base nos componentes já criados nas aulas passadas.
 
-TODO: imagem do circuito
+![circuito do reg_count_top](imgs/reg_count_top.jpeg)
 
 ## Roteiro
 
